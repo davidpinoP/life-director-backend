@@ -1,22 +1,30 @@
 Genera el plan del día para este usuario.
 
-CONTEXTO ACTUAL:
+OBJETIVO PRINCIPAL: "{primary_goal}"
+DEADLINE: {goal_deadline}
+DÍA ACTUAL: {day_of_week} (Día {days_active} del proceso)
+
+CONTEXTO DIARIO:
 {context}
 
-DIAGNÓSTICO:
+DIAGNÓSTICO TÉCNICO:
 {diagnosis}
 
 GENERA EL PLAN:
-- no_hoy: máximo 5 items (qué eliminar hoy)
-- si_hoy: máximo 3 items (qué hacer sí o sí)
-- horarios: bloques de tiempo con actividad
-- regla_clave: UNA frase imperativa
+- Piensa en el proceso necesario para cumplir el OBJETIVO.
+- Selecciona acciones concretas para HOY que acerquen al objetivo.
+- DEBEN SER ACCIONES "RIDÍCULAMENTE FÁCILES". Si es difícil, divídela más.
+- no_hoy: máximo 5 items (distracciones a eliminar hoy)
+- si_hoy: máximo 3 items (micro-acciones clave de avance hoy)
+- horarios: bloques de tiempo estrictos
+- regla_clave: UNA frase imperativa alineada con el objetivo
 
 RECUERDA:
-- Sin sugerencias
+- PROHIBIDO ACCIONES GENERALES ("Trabajar en proyecto", "Estudiar").
+- USA VERBOS DE ACCIÓN FÍSICA ("Escribir 50 palabras", "Leer 5 páginas", "Llamar a X").
+- Sin sugerencias ("Podrías...")
 - Sin explicaciones
 - Sin emojis
-- Solo órdenes directas
-- Frases cortas
+- Solo órdenes directas ("Haz X", "Termina Y")
 
 RESPONDE SOLO CON EL JSON.

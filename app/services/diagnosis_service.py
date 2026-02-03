@@ -295,8 +295,18 @@ class DiagnosisService:
         
         highest = max(scores, key=lambda x: x[0])
         
+        # Determine action text based on bottleneck type
+        if bottleneck["primary"] == "declared_obstacle":
+            bottleneck_action = f"Elimina bloqueo: {bottleneck['details']}"
+        elif bottleneck["primary"] == "overwork":
+            bottleneck_action = "Reduce jornada laboral (límite 10h)"
+        elif bottleneck["primary"] == "fragmentation":
+            bottleneck_action = "Elimina 2 actividades hoy"
+        else:
+            bottleneck_action = "Identifica tu bloqueo principal"
+
         actions = {
-            "bottleneck": f"Elimina el bloqueo: {bottleneck['primary']}",
+            "bottleneck": bottleneck_action,
             "dispersion": f"Reduce actividades a {DISPERSION_THRESHOLD} máximo",
             "sleep": "Aumenta horas de sueño esta semana",
             "energy_leak": f"Elimina: {', '.join(energy_leak['sources'][:2]) if energy_leak['sources'] else 'actividades sin impacto'}",

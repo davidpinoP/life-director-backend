@@ -76,11 +76,30 @@ async def create_daily_plan(
     blocker = AntiBlockEngine.get_primary_blocker(feedback_history)
     
     # Build request context
+    from datetime import datetime
+    import locale
+    
+    # Calculate days active
+    days_active = (datetime.utcnow() - onboarding.created_at).days + 1
+    
+    # Calculate day name in Spanish
+    days_map = {
+        0: "Lunes", 1: "Martes", 2: "Miércoles", 3: "Jueves", 
+        4: "Viernes", 5: "Sábado", 6: "Domingo"
+    }
+    current_day = days_map[datetime.utcnow().weekday()]
+    
     plan_context = {
         "available_hours": request.available_hours,
         "energy_level": request.energy_level,
         "existing_commitments": request.existing_commitments,
         "yesterday_completion": request.yesterday_completion,
+        
+        # New context for goal-oriented planning
+        "primary_goal": onboarding.primary_goal,
+        "goal_deadline": onboarding.goal_deadline or "Sin fecha límite",
+        "day_of_week": current_day,
+        "days_active": days_active,
     }
     
     if blocker and blocker.pattern_detected:

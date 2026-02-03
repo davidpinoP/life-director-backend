@@ -84,10 +84,14 @@ RESPONDE SOLO CON EL JSON. NADA MÁS."""
         context_str = self._build_context(context, user_history)
         diagnosis_str = self._build_diagnosis_summary(diagnosis)
         
-        # Format prompt
+        # Format prompt with rich context
         user_prompt = self.order_prompt.format(
             context=context_str,
-            diagnosis=diagnosis_str
+            diagnosis=diagnosis_str,
+            primary_goal=context.get("primary_goal", "No definido"),
+            goal_deadline=context.get("goal_deadline", "No definido"),
+            day_of_week=context.get("day_of_week", "Hoy"),
+            days_active=context.get("days_active", 1)
         )
         
         # Generate with validation
