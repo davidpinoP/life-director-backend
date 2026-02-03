@@ -140,6 +140,20 @@ document.getElementById('form-onboarding').addEventListener('submit', async (e) 
         peak_energy_time: document.getElementById('peak-energy').value
     };
 
+    // Validación: Mínimo 1 actividad requerida
+    if (activitiesList.length === 0) {
+        // Añadimos "Trabajo principal" por defecto si no ha puesto nada
+        activitiesList.push({
+            name: "Trabajo/Estudio principal",
+            hours_per_week: data.hours_work * 5,
+            priority: 10,
+            aligned_with_goal: true
+        });
+    }
+
+    // Actualizamos el objeto data con la lista (posiblemente modificada)
+    data.current_activities = activitiesList;
+
     try {
         const res = await fetch(`${API_URL}/onboarding`, {
             method: 'POST',

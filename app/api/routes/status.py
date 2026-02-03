@@ -32,6 +32,8 @@ class StatusResponse(BaseModel):
     llm_configured: bool
 
 
+from sqlalchemy import text
+
 @router.get("/status", response_model=StatusResponse)
 async def get_status(
     db: AsyncSession = Depends(get_db)
@@ -42,7 +44,7 @@ async def get_status(
     
     # Check database
     try:
-        await db.execute("SELECT 1")
+        await db.execute(text("SELECT 1"))
         db_status = "connected"
     except Exception:
         db_status = "disconnected"
