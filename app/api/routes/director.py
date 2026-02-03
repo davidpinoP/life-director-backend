@@ -3,6 +3,7 @@ Director Routes
 Core functionality: daily plan generation.
 """
 
+from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -217,3 +218,37 @@ async def submit_feedback(
     )
     
     return FeedbackResponse.model_validate(feedback_record)
+
+from app.models.daily_plan import DailyPlanResponse, PlanHistoryItem
+
+@router.get("/history", response_model=List[PlanHistoryItem])
+async def get_plan_history(
+    limit: int = 30,
+    db: AsyncSession = Depends(get_db),
+    current_user: UserInDB = Depends(get_current_user)
+):
+    """
+    Get full history of daily plans.
+    """
+    
+    # Get recent plans
+    plans = await crud.get_recent_plans(db, current_user.id, limit)
+    
+    # Get feedback dict
+    feedback_list = await crud.get_user_feedback_history(db, current_user.id, limit)
+    feedback_map = {f.plan_id: f for f in feedback_list}
+    
+    history_items = []
+    for plan in plans:
+        item = PlanHistoryItem.model_validate(plan)
+        
+        # Attach feedback info if exists
+        if plan.id in feedback_map:
+            fb = feedback_map[plan.id]
+            item.completion_rate = fb.completion_rate
+            item.had_blockers = fb.had_blockers
+            item.feedback_id = fb.id
+            
+        history_items.append(item)
+        
+    return history_items

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -9,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
     <div id="app">
         <!-- Auth Screen -->
@@ -18,13 +20,13 @@
                     <h1 class="logo">LIFE DIRECTOR</h1>
                     <p class="tagline">Sistema de decisión personal</p>
                 </header>
-                
+
                 <div class="auth-form">
                     <div class="tabs">
                         <button class="tab active" data-tab="login">Entrar</button>
                         <button class="tab" data-tab="register">Registrar</button>
                     </div>
-                    
+
                     <form id="form-login" class="form active">
                         <div class="input-group">
                             <input type="email" id="login-email" placeholder="Email" required>
@@ -34,22 +36,23 @@
                         </div>
                         <button type="submit" class="btn-primary">Acceder</button>
                     </form>
-                    
+
                     <form id="form-register" class="form">
                         <div class="input-group">
                             <input type="email" id="register-email" placeholder="Email" required>
                         </div>
                         <div class="input-group">
-                            <input type="password" id="register-password" placeholder="Contraseña (mín. 8 caracteres)" minlength="8" required>
+                            <input type="password" id="register-password" placeholder="Contraseña (mín. 8 caracteres)"
+                                minlength="8" required>
                         </div>
                         <button type="submit" class="btn-primary">Crear cuenta</button>
                     </form>
                 </div>
-                
+
                 <div id="auth-error" class="error-message"></div>
             </div>
         </div>
-        
+
         <!-- Onboarding Screen -->
         <div id="screen-onboarding" class="screen">
             <div class="container">
@@ -57,38 +60,38 @@
                     <h2>Diagnóstico inicial</h2>
                     <p>Responde con honestidad</p>
                 </header>
-                
+
                 <form id="form-onboarding" class="onboarding-form">
                     <div class="form-section">
                         <label>Objetivo principal</label>
                         <input type="text" id="primary-goal" placeholder="¿Qué quieres lograr?" required>
                     </div>
-                    
+
                     <div class="form-section">
                         <label>Plazo</label>
                         <input type="text" id="goal-deadline" placeholder="¿Para cuándo?">
                     </div>
-                    
+
                     <div class="form-section">
                         <label>Horas de trabajo diarias</label>
                         <input type="number" id="hours-work" min="0" max="24" step="0.5" value="8" required>
                     </div>
-                    
+
                     <div class="form-section">
                         <label>Horas de sueño</label>
                         <input type="number" id="hours-sleep" min="0" max="24" step="0.5" value="7" required>
                     </div>
-                    
+
                     <div class="form-section">
                         <label>Ejercicio (horas/semana)</label>
                         <input type="number" id="hours-exercise" min="0" max="40" step="0.5" value="0">
                     </div>
-                    
+
                     <div class="form-section">
                         <label>Principal obstáculo</label>
                         <textarea id="main-obstacle" placeholder="¿Qué te impide avanzar?"></textarea>
                     </div>
-                    
+
                     <div class="form-section">
                         <label>Momento de máxima energía</label>
                         <select id="peak-energy">
@@ -97,76 +100,106 @@
                             <option value="evening">Noche</option>
                         </select>
                     </div>
-                    
+
                     <div class="form-section">
                         <label>Actividades actuales</label>
                         <div id="activities-list"></div>
                         <button type="button" id="add-activity" class="btn-secondary">+ Añadir actividad</button>
                     </div>
-                    
+
                     <button type="submit" class="btn-primary">Iniciar diagnóstico</button>
                 </form>
             </div>
         </div>
-        
+
         <!-- Dashboard Screen -->
         <div id="screen-dashboard" class="screen">
             <div class="container">
                 <header class="dashboard-header">
+                    <button id="btn-menu" class="btn-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </button>
                     <div class="date-display">
                         <span id="current-date"></span>
                     </div>
                     <button id="btn-logout" class="btn-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                            <polyline points="16,17 21,12 16,7"/>
-                            <line x1="21" y1="12" x2="9" y2="12"/>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                            <polyline points="16,17 21,12 16,7" />
+                            <line x1="21" y1="12" x2="9" y2="12" />
                         </svg>
                     </button>
                 </header>
-                
+
                 <div id="loading-plan" class="loading">
                     <div class="spinner"></div>
                     <p>Analizando...</p>
                 </div>
-                
+
                 <div id="plan-content" class="plan-content hidden">
                     <!-- Key Rule -->
                     <div class="rule-card">
                         <p id="regla-clave" class="rule-text"></p>
                     </div>
-                    
+
                     <!-- SI HOY -->
                     <section class="plan-section">
                         <h3 class="section-title section-yes">HOY SÍ</h3>
                         <ul id="list-si-hoy" class="plan-list"></ul>
                     </section>
-                    
+
                     <!-- NO HOY -->
                     <section class="plan-section">
                         <h3 class="section-title section-no">HOY NO</h3>
                         <ul id="list-no-hoy" class="plan-list plan-list-no"></ul>
                     </section>
-                    
+
                     <!-- Horarios -->
                     <section class="plan-section">
                         <h3 class="section-title">HORARIOS</h3>
                         <div id="schedule" class="schedule-list"></div>
                     </section>
-                    
+
                     <!-- Feedback Button -->
                     <button id="btn-feedback" class="btn-primary btn-feedback">
                         Registrar día
                     </button>
                 </div>
-                
+
                 <div id="no-plan" class="no-plan hidden">
                     <p>No hay plan para hoy</p>
                     <button id="btn-generate" class="btn-primary">Generar plan</button>
                 </div>
             </div>
         </div>
-        
+
+        <!-- History Screen -->
+        <div id="screen-history" class="screen">
+            <div class="container">
+                <header class="dashboard-header">
+                    <h2>Historial</h2>
+                    <button class="btn-icon nav-back" data-target="dashboard">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <line x1="19" y1="12" x2="5" y2="12"></line>
+                            <polyline points="12 19 5 12 12 5"></polyline>
+                        </svg>
+                    </button>
+                </header>
+
+                <div id="history-list" class="history-list">
+                    <!-- Cards will be injected here -->
+                    <div class="loading-history">Cargando...</div>
+                </div>
+            </div>
+        </div>
+
         <!-- Feedback Modal -->
         <div id="modal-feedback" class="modal">
             <div class="modal-content">
@@ -174,13 +207,13 @@
                     <h3>Registro del día</h3>
                     <button id="close-modal" class="btn-close">&times;</button>
                 </header>
-                
+
                 <form id="form-feedback">
                     <div class="form-section">
                         <label>Tareas completadas</label>
                         <div id="feedback-tasks"></div>
                     </div>
-                    
+
                     <div class="form-section">
                         <label>¿Tuviste bloqueos?</label>
                         <div class="toggle-group">
@@ -189,7 +222,7 @@
                         </div>
                         <input type="hidden" id="had-blockers" value="false">
                     </div>
-                    
+
                     <div id="blocker-details" class="form-section hidden">
                         <label>Tipo de bloqueo</label>
                         <select id="blocker-type">
@@ -200,30 +233,66 @@
                             <option value="other">Otro</option>
                         </select>
                     </div>
-                    
+
                     <div class="form-section">
                         <label>Horas de sueño anoche</label>
                         <input type="number" id="feedback-sleep" min="0" max="24" step="0.5">
                     </div>
-                    
+
                     <div class="form-section">
                         <label>Energía al inicio (1-10)</label>
                         <input type="range" id="energy-start" min="1" max="10" value="5">
                         <span id="energy-start-value">5</span>
                     </div>
-                    
+
                     <div class="form-section">
                         <label>Energía al final (1-10)</label>
                         <input type="range" id="energy-end" min="1" max="10" value="5">
                         <span id="energy-end-value">5</span>
                     </div>
-                    
+
                     <button type="submit" class="btn-primary">Guardar</button>
                 </form>
             </div>
         </div>
+
+        <!-- Day Detail Modal -->
+        <div id="modal-day-detail" class="modal">
+            <div class="modal-content">
+                <header class="modal-header">
+                    <div class="modal-title-group">
+                        <h3 id="detail-date">Fecha</h3>
+                        <div id="detail-score" class="score-badge"></div>
+                    </div>
+                    <button id="close-detail-modal" class="btn-close">&times;</button>
+                </header>
+
+                <div class="detail-body">
+                    <div class="detail-section rule-section">
+                        <label>Regla del día</label>
+                        <p id="detail-rule" class="detail-rule"></p>
+                    </div>
+
+                    <div class="detail-section">
+                        <label>Tareas clave</label>
+                        <ul id="detail-tasks" class="detail-list checkbox-list"></ul>
+                    </div>
+
+                    <div class="detail-section">
+                        <label>Lo que eliminaste</label>
+                        <ul id="detail-forbidden" class="detail-list forbidden-list"></ul>
+                    </div>
+
+                    <div id="detail-blocker-section" class="detail-section hidden">
+                        <label>Bloqueo reportado</label>
+                        <p id="detail-blocker" class="blocker-text"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    
+
     <script src="app.js"></script>
 </body>
+
 </html>

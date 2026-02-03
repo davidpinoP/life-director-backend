@@ -32,6 +32,7 @@ authTabs.forEach(tab => {
 
 document.getElementById('form-login').addEventListener('submit', async (e) => {
     e.preventDefault();
+    console.log("Intentando login...");
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
 
@@ -48,15 +49,19 @@ document.getElementById('form-login').addEventListener('submit', async (e) => {
 
         token = data.access_token;
         localStorage.setItem('token', token);
+        console.log("Login exitoso");
         checkAuth();
 
     } catch (err) {
+        console.error("Login error:", err);
         errorMsg.textContent = err.message;
+        alert(`Error: ${err.message}`); // Force visibility
     }
 });
 
 document.getElementById('form-register').addEventListener('submit', async (e) => {
     e.preventDefault();
+    console.log("Intentando registro...");
     const email = document.getElementById('register-email').value;
     const password = document.getElementById('register-password').value;
 
@@ -73,12 +78,15 @@ document.getElementById('form-register').addEventListener('submit', async (e) =>
         }
 
         // Auto login after register
+        console.log("Registro exitoso, autologin...");
         document.getElementById('login-email').value = email;
         document.getElementById('login-password').value = password;
         document.getElementById('form-login').dispatchEvent(new Event('submit'));
 
     } catch (err) {
+        console.error("Register error:", err);
         errorMsg.textContent = err.message;
+        alert(`Error Registro: ${err.message}`);
     }
 });
 
@@ -386,6 +394,152 @@ document.getElementById('form-feedback').addEventListener('submit', async (e) =>
     } catch (err) {
         alert(err.message);
     }
+});
+
+// Setup
+// --- History Logic ---
+const historyScreen = document.getElementById('screen-history');
+const historyList = document.getElementById('history-list');
+
+document.getElementById('btn-menu').addEventListener('click', () => {
+    loadHistory();
+    showScreen('history');
+});
+
+document.querySelectorAll('.nav-back').forEach(btn => {
+    btn.addEventListener('click', () => {
+        showScreen(btn.dataset.target);
+    });
+});
+
+async function loadHistory() {
+    historyList.innerHTML = '<div class="loading-history" style="color: white; padding: 20px; text-align: center;">Cargando historial...</div>';
+
+    try {
+        console.log("Fetching history...");
+        const res = await fetch(`${API_URL}/director/history?limit=30`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!res.ok) {
+            const errText = await res.text();
+            throw new Error(`Error backend (${res.status}): ${errText}`);
+        }
+
+        const history = await res.json();
+        console.log("History received:", history);
+        renderHistory(history);
+
+    } catch (err) {
+        console.error("History error:", err);
+        historyList.innerHTML = `<div class="error-message" style="color: red; padding: 20px;">Error: ${err.message}</div>`;
+    }
+}
+
+function renderHistory(items) {
+    if (items.length === 0) {
+        historyList.innerHTML = '<p style="text-align:center; padding:20px; color:var(--text-secondary)">Aún no tienes historial.</p>';
+        return;
+    }
+
+    historyList.innerHTML = items.map(item => {
+        const date = new Date(item.date).toLocaleDateString();
+        const rule = item.regla_clave;
+
+        let badgeHtml = '';
+        let badgeColor = 'var(--secondary-color)';
+
+        if (item.completion_rate !== null) {
+            const pct = Math.round(item.completion_rate * 100);
+            badgeHtml = `${pct}%`;
+
+            if (pct >= 80) badgeColor = 'var(--success-color)';
+            else if (pct >= 50) badgeColor = '#f57c00'; // Orange
+            else badgeColor = 'var(--error-color)';
+        } else {
+            badgeHtml = '-';
+        }
+
+        // Data attribute stores the full item for click handler
+        // Using replace to escape potential quotes in json stringify
+        const jsonItem = JSON.stringify(item).replace(/"/g, '&quot;');
+
+        return `
+            <div class="history-card" onclick="openHistoryDetail('${item.id}')">
+                <div>
+                    <div class="card-date">${date}</div>
+                    <div class="card-rule">${rule}</div>
+                </div>
+                <div class="completion-badge" style="background-color: ${badgeColor}">
+                    ${badgeHtml}
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    // Store items in memory for detail view
+    window.historyItems = items;
+}
+
+// Global function for onclick
+window.openHistoryDetail = (id) => {
+    const item = window.historyItems.find(i => i.id === id);
+    if (!item) return;
+
+    const modal = document.getElementById('modal-day-detail');
+
+    // Populate modal
+    document.getElementById('detail-date').textContent = new Date(item.date).toLocaleDateString(undefined, {
+        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+    });
+
+    document.getElementById('detail-rule').textContent = item.regla_clave;
+
+    // Score Badge
+    const scoreBadge = document.getElementById('detail-score');
+    if (item.completion_rate !== null) {
+        const pct = Math.round(item.completion_rate * 100);
+        scoreBadge.textContent = `${pct}% CUMPLIDO`;
+        scoreBadge.style.backgroundColor = pct >= 80 ? 'var(--success-color)' : (pct >= 50 ? '#f57c00' : 'var(--error-color)');
+    } else {
+        scoreBadge.textContent = 'SIN REGISTRAR';
+        scoreBadge.style.backgroundColor = 'var(--secondary-color)';
+    }
+
+    // Tasks List
+    const taskContainer = document.getElementById('detail-tasks');
+    // We assume backend returns completion status inside the history object if we expand it later.
+    // BUT right now PlanHistoryItem only has optional completion_rate/had_blockers.
+    // It doesn't have the list of WHICH items were completed (that's in Feedback body, but our history endpoint returns PlanHistoryItem).
+    // The current endpoint returns Plan (with si_hoy) + Feedback Summary.
+    // To show which ones were done, we need to either:
+    // A) Update backend to return full feedback details
+    // B) Fetch feedback details on click.
+    // Given the request, we should probably just show the plan's tasks and assume they were done *IF* feedback logic matches, but we don't know existing specific completions.
+
+    // Simplification for V1: Show original tasks list.
+    // If we want to show strikethrough for completed, we need completed_items from feedback.
+
+    // Let's implement fetch detail if needed, or just list them.
+    // The user said "see all tasks".
+
+    taskContainer.innerHTML = item.si_hoy.map(task => `<li>${task}</li>`).join('');
+    document.getElementById('detail-forbidden').innerHTML = item.no_hoy.map(task => `<li>${task}</li>`).join('');
+
+    // Blocker
+    const blockerSection = document.getElementById('detail-blocker-section');
+    if (item.had_blockers) {
+        blockerSection.classList.remove('hidden');
+        document.getElementById('detail-blocker').textContent = "Se reportó un bloqueo ese día.";
+    } else {
+        blockerSection.classList.add('hidden');
+    }
+
+    modal.classList.add('active');
+};
+
+document.getElementById('close-detail-modal').addEventListener('click', () => {
+    document.getElementById('modal-day-detail').classList.remove('active');
 });
 
 // Setup

@@ -116,3 +116,11 @@ class PlanValidationResult(BaseModel):
     is_valid: bool
     errors: List[str] = Field(default_factory=list)
     warnings: List[str] = Field(default_factory=list)
+
+
+class PlanHistoryItem(DailyPlanResponse):
+    """Extended plan info with feedback status."""
+    
+    completion_rate: Optional[float] = None
+    had_blockers: Optional[bool] = None
+    feedback_id: Optional[str] = None
