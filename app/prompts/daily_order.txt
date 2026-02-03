@@ -1,0 +1,27 @@
+Genera el plan del día para este usuario.
+
+CONTEXTO ACTUAL:
+{context}
+
+DIAGNÓSTICO:
+{diagnosis}
+
+HISTORIAL RELEVANTE:
+- Cumplimiento ayer: {yesterday_completion}%
+- Tendencia: {trend}
+- Bloqueos frecuentes: {frequent_blockers}
+
+GENERA EL PLAN:
+- no_hoy: máximo 5 items (qué eliminar hoy)
+- si_hoy: máximo 3 items (qué hacer sí o sí)
+- horarios: bloques de tiempo con actividad
+- regla_clave: UNA frase imperativa
+
+RECUERDA:
+- Sin sugerencias
+- Sin explicaciones
+- Sin emojis
+- Solo órdenes directas
+- Frases cortas
+
+RESPONDE SOLO CON EL JSON.

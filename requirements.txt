@@ -1,0 +1,33 @@
+# IA Life Director Backend - Dependencies
+# Python 3.11+
+
+# Web Framework
+fastapi
+uvicorn
+python-multipart
+
+# Validation
+pydantic
+pydantic-settings
+
+# Database
+sqlalchemy
+asyncpg
+alembic
+
+# Security (sin bcrypt para evitar Rust)
+python-jose
+
+# HTTP Client (for LLM)
+httpx
+openai
+
+# Environment
+python-dotenv
+
+# Testing
+pytest
+pytest-asyncio
+
+# Utilities
+python-dateutil

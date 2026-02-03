@@ -1,0 +1,16 @@
+DIAGNÓSTICO DEL USUARIO:
+
+Objetivo principal: {primary_goal}
+Cuello de botella: {bottleneck}
+Nivel de dispersión: {dispersion_level}
+Deuda de sueño: {sleep_debt}h
+Fuga de energía: {energy_leak}%
+Incoherencia detectada: {incoherence}
+
+PATRONES IDENTIFICADOS:
+- Actividades alineadas: {aligned_count}/{total_activities}
+- Media de cumplimiento: {completion_avg}%
+- Bloqueador recurrente: {common_blocker}
+
+ACCIÓN PRIORITARIA:
+{priority_action}
