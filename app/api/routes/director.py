@@ -87,11 +87,19 @@ async def create_daily_plan(
         plan_context["blocker_intervention"] = blocker.intervention
     
     # Generate plan
-    result = await generate_plan(
-        diagnosis=diagnosis,
-        context=plan_context,
-        history=feedback_history,
-    )
+    try:
+        result = await generate_plan(
+            diagnosis=diagnosis,
+            context=plan_context,
+            history=feedback_history,
+        )
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error generando plan: {str(e)}"
+        )
     
     plan_data = result["plan"]
     
