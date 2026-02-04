@@ -640,3 +640,220 @@ input[type=range]::-webkit-slider-thumb {
     border-radius: var(--radius-md);
     font-size: 14px;
 }
+
+/* --- Home Menu --- */
+.center-vertical {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 100vh;
+    padding-bottom: 80px;
+}
+
+.menu-header {
+    text-align: center;
+    margin-bottom: var(--spacing-xl);
+}
+
+.menu-title {
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    margin-bottom: var(--spacing-xs);
+}
+
+.menu-subtitle {
+    font-size: 14px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.menu-grid {
+    display: grid;
+    gap: var(--spacing-md);
+    grid-template-columns: 1fr;
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.menu-card {
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: var(--spacing-lg);
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.2s, background-color 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.menu-card:hover {
+    transform: translateY(-2px);
+    background-color: #1a1a1a;
+    border-color: var(--secondary-color);
+}
+
+.card-icon {
+    color: var(--primary-color);
+    margin-bottom: var(--spacing-xs);
+}
+
+.menu-card h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.menu-card p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+#btn-logout-menu {
+    margin-top: var(--spacing-xl);
+    color: var(--text-secondary);
+    width: 100%;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+/* --- Stats Screen --- */
+.stats-content {
+    display: grid;
+    gap: var(--spacing-md);
+    grid-template-columns: 1fr;
+}
+
+.stat-card {
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: var(--spacing-lg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.sleep-card {
+    border-color: #3f51b5;
+    /* Indigo tint */
+}
+
+.completion-card {
+    border-color: var(--success-color);
+}
+
+.stat-icon {
+    font-size: 24px;
+    margin-bottom: var(--spacing-sm);
+}
+
+.stat-value {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: var(--spacing-xs);
+}
+
+.stat-label {
+    font-size: 13px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+}
+
+.stat-msg {
+    margin-top: var(--spacing-sm);
+    font-size: 14px;
+    color: var(--primary-color);
+}
+
+.recommendation-card {
+    background-color: #1a1a1a;
+    border-radius: 12px;
+    padding: var(--spacing-lg);
+    margin-top: var(--spacing-md);
+    border-left: 4px solid var(--primary-color);
+}
+
+.recommendation-card h3 {
+    font-size: 16px;
+    margin-bottom: var(--spacing-sm);
+    color: var(--text-secondary);
+}
+
+
+/* --- Aesthetic Overhaul (Premium) --- */
+
+/* Clean Animation */
+@keyframes slideFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.screen.active {
+    display: block;
+    animation: slideFadeIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+/* Menu Card Premium (Override) */
+.menu-card {
+    background: rgba(255, 255, 255, 0.03) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    padding: var(--spacing-xl);
+    border-radius: 16px;
+}
+
+.menu-card:hover {
+    transform: translateY(-4px) scale(1.02);
+    background: rgba(255, 255, 255, 0.08) !important;
+    /* White shimmer */
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.menu-summary {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--primary-color);
+    margin-top: 8px !important;
+    opacity: 0.9;
+    letter-spacing: 0.5px;
+}
+
+/* Typography Tune */
+body {
+    letter-spacing: 0.3px;
+    /* Cleaner reading */
+}
+
+h1,
+h2,
+h3 {
+    letter-spacing: -0.5px;
+    /* Tighter headings */
+}
+
+/* Monochrome Icons override */
+.stat-icon,
+.card-icon {
+    color: var(--primary-color);
+}

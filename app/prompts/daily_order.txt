@@ -14,7 +14,10 @@ GENERA EL PLAN:
 - Piensa en el proceso necesario para cumplir el OBJETIVO.
 - Selecciona acciones concretas para HOY que acerquen al objetivo.
 - DEBEN SER ACCIONES "RIDÍCULAMENTE FÁCILES". Si es difícil, divídela más.
-- no_hoy: máximo 5 items (distracciones a eliminar hoy)
+- no_hoy: máximo 5 items. REGLA DE ORO: ESPECIFICIDAD RADICAL.
+  * MALO: "No usar móvil", "No perder tiempo".
+  * BUENO: "Móvil < 30 min", "Cero Redes Sociales", "TV solo 1 hora".
+  * DEFINE LÍMITES MEDIBLES.
 - si_hoy: máximo 3 items (micro-acciones clave de avance hoy)
 - horarios: bloques de tiempo estrictos
 - regla_clave: UNA frase imperativa alineada con el objetivo

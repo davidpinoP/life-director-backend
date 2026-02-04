@@ -6,13 +6,21 @@ let currentUser = null;
 const screens = {
     auth: document.getElementById('screen-auth'),
     onboarding: document.getElementById('screen-onboarding'),
-    dashboard: document.getElementById('screen-dashboard')
+    dashboard: document.getElementById('screen-dashboard'),
+    history: document.getElementById('screen-history'),
+    menu: document.getElementById('screen-menu'),
+    stats: document.getElementById('screen-stats')
 };
 
 // --- Navigation ---
 function showScreen(screenName) {
-    Object.values(screens).forEach(s => s.classList.remove('active'));
-    screens[screenName].classList.add('active');
+    Object.values(screens).forEach(s => s && s.classList.remove('active'));
+
+    if (screens[screenName]) {
+        screens[screenName].classList.add('active');
+    } else {
+        console.error(`Screen "${screenName}" not found in DOM.`);
+    }
 }
 
 // --- Auth Logic ---
@@ -111,8 +119,13 @@ async function checkAuth() {
         // Let's try to get status to verify connection
         await fetch(`${API_URL}/status`);
 
-        // Now try to fetch the daily plan to see if we need onboarding
-        loadDailyPlan();
+        // Update: Now we go to Menu (Home) instead of loading plan immediately
+        // Update: Now we go to Menu (Home) instead of loading plan immediately
+        showScreen('menu');
+        loadHomeSummaries(); // Refresh data for cards
+
+        // We can optionally pre-fetch to update the badge or state but it's not strictly necessary for v1 home
+
 
     } catch (err) {
         console.error(err);
@@ -401,10 +414,7 @@ document.getElementById('form-feedback').addEventListener('submit', async (e) =>
 const historyScreen = document.getElementById('screen-history');
 const historyList = document.getElementById('history-list');
 
-document.getElementById('btn-menu').addEventListener('click', () => {
-    loadHistory();
-    showScreen('history');
-});
+
 
 document.querySelectorAll('.nav-back').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -543,4 +553,137 @@ document.getElementById('close-detail-modal').addEventListener('click', () => {
 });
 
 // Setup
+
+// --- Menu & Stats Logic ---
+
+// Global navigation for HTML onclicks
+window.goToScreen = (screenName) => {
+    if (screenName === 'dashboard') {
+        loadDailyPlan();
+    } else if (screenName === 'history') {
+        loadHistory();
+        showScreen('history');
+    } else if (screenName === 'stats') {
+        loadStats();
+        showScreen('stats');
+    } else {
+        showScreen(screenName);
+    }
+};
+
+document.getElementById('btn-logout-menu').addEventListener('click', () => {
+    localStorage.removeItem('token');
+    token = null;
+    showScreen('auth');
+});
+
+
+async function loadStats() {
+    const loading = document.getElementById('loading-stats');
+    const content = document.getElementById('stats-content');
+
+    loading.classList.remove('hidden'); // Ensure loading is visible
+    content.classList.add('hidden');
+
+    try {
+        const res = await fetch(`${API_URL}/feedback/analysis`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!res.ok) throw new Error('No hay suficientes datos aún.');
+
+        const data = await res.json();
+
+        // Render Stats
+        document.getElementById('stat-sleep').textContent =
+            data.average_sleep ? `${data.average_sleep.toFixed(1)} h` : '--';
+
+        document.getElementById('stat-completion').textContent =
+            `${Math.round(data.average_completion * 100)}%`;
+
+        document.getElementById('stat-recommendation').textContent =
+            data.recommendation || "Sigue registrando días para obtener análisis.";
+
+        // Energy/Sleep Message
+        const sleepMsg = document.getElementById('stat-sleep-msg');
+        if (data.sleep_trend === 'declining') {
+            sleepMsg.textContent = "Tendencia a la baja. Cuidado.";
+            sleepMsg.style.color = 'var(--error-color)';
+        } else {
+            sleepMsg.textContent = "Estable.";
+            sleepMsg.style.color = 'var(--success-color)';
+        }
+
+        loading.classList.add('hidden'); // Custom CSS might need fix if 'active' class used commonly
+        // My CSS for .loading uses .active to show. 
+        // Logic: .loading (display:none), .loading.active (display:block)
+        // So I should use .active
+
+        loading.style.display = 'none'; // Force hide for safety or use class logic
+        content.classList.remove('hidden');
+
+    } catch (err) {
+        console.error(err);
+        loading.innerHTML = `<p style="color:red">${err.message}</p>`;
+    }
+}
+
+// Fix: Ensure loading class logic is consistent
+// In accessible CSS: .loading { display: none } .loading.active { display: block }
+// So to show: add active. To hide: remove active.
+
+// Setup
 checkAuth();
+
+async function loadHomeSummaries() {
+    // 1. Plan Summary
+    const planEl = document.getElementById('summary-plan');
+    if (!planEl) return;
+    try {
+        const res = await fetch(`${API_URL}/director/today`, { headers: { 'Authorization': `Bearer ${token}` } });
+        if (res.ok) {
+            const plan = await res.json();
+            const doneCount = plan.si_hoy.length;
+            planEl.innerText = `${doneCount} Órdenes Activas.`;
+            planEl.style.color = 'var(--primary-color)';
+        } else if (res.status === 404) {
+            planEl.innerText = "Sin plan (Generar)";
+            planEl.style.color = 'var(--text-secondary)';
+        } else {
+            planEl.innerText = "Estado desconocido";
+        }
+    } catch { planEl.innerText = "--"; }
+
+    // 2. Stats Summary
+    const statsEl = document.getElementById('summary-stats');
+    if (statsEl) {
+        try {
+            const res = await fetch(`${API_URL}/feedback/analysis`, { headers: { 'Authorization': `Bearer ${token}` } });
+            if (res.ok) {
+                const data = await res.json();
+                const sleep = data.average_sleep ? `${data.average_sleep.toFixed(1)}h` : '--';
+                const comp = Math.round(data.average_completion * 100);
+                statsEl.innerText = `Sueño: ${sleep} | ${comp}% Cumplido`;
+            } else {
+                statsEl.innerText = "Sin datos suficientes";
+            }
+        } catch { statsEl.innerText = "--"; }
+    }
+
+    // 3. History Summary
+    const histEl = document.getElementById('summary-history');
+    if (histEl) {
+        try {
+            const res = await fetch(`${API_URL}/director/history?limit=1`, { headers: { 'Authorization': `Bearer ${token}` } });
+            if (res.ok) {
+                const list = await res.json();
+                if (list.length > 0) {
+                    const date = new Date(list[0].date).toLocaleDateString();
+                    histEl.innerText = `Último registro: ${date}`;
+                } else {
+                    histEl.innerText = "Sin historial";
+                }
+            }
+        } catch { histEl.innerText = "--"; }
+    }
+}
