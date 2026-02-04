@@ -165,6 +165,19 @@
                         <h3>Métricas</h3>
                         <p id="summary-stats" class="menu-summary">--</p>
                     </div>
+
+                    <!-- Card: Achievements -->
+                    <div class="menu-card" onclick="goToScreen('achievements')">
+                        <div class="card-icon">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <circle cx="12" cy="8" r="7"></circle>
+                                <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+                            </svg>
+                        </div>
+                        <h3>Logros</h3>
+                        <p id="summary-achievements" class="menu-summary">--</p>
+                    </div>
                 </div>
 
                 <button id="btn-logout-menu" class="btn-text">Cerrar Sesión</button>
@@ -226,6 +239,27 @@
             </div>
         </div>
 
+        <!-- Achievements Screen -->
+        <div id="screen-achievements" class="screen">
+            <div class="container">
+                <header class="dashboard-header">
+                    <h2>Tus Logros</h2>
+                    <button class="btn-icon nav-back" data-target="menu">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <line x1="19" y1="12" x2="5" y2="12"></line>
+                            <polyline points="12 19 5 12 12 5"></polyline>
+                        </svg>
+                    </button>
+                </header>
+
+                <div id="achievements-list" class="achievements-list">
+                    <!-- Achievement items will be injected here -->
+                    <div class="loading">Cargando logros...</div>
+                </div>
+            </div>
+        </div>
+
         <!-- Dashboard Screen -->
         <div id="screen-dashboard" class="screen">
             <div class="container">
@@ -259,6 +293,21 @@
                     <!-- Key Rule -->
                     <div class="rule-card">
                         <p id="regla-clave" class="rule-text"></p>
+                    </div>
+
+                    <!-- Active Achievement Progress -->
+                    <div id="active-achievement-card" class="achievement-mini-card hidden"
+                        onclick="goToScreen('achievements')">
+                        <div class="achievement-icon">🏆</div>
+                        <div class="achievement-info">
+                            <div class="achievement-header">
+                                <span id="active-achievement-title">Logro del Mes</span>
+                                <span id="active-achievement-pct">0%</span>
+                            </div>
+                            <div class="progress-bar-container">
+                                <div id="active-achievement-progress" class="progress-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- SI HOY -->

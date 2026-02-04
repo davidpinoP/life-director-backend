@@ -216,6 +216,11 @@ async def submit_feedback(
             "sleep_quality": feedback.sleep_quality,
         }
     )
+
+    # Update achievement progress
+    from app.services.achievement_service import AchievementService
+    achievement_service = AchievementService(db)
+    await achievement_service.update_active_achievement_progress(current_user.id, completion_rate)
     
     return FeedbackResponse.model_validate(feedback_record)
 

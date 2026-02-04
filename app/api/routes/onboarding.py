@@ -32,55 +32,69 @@ async def submit_onboarding(
     Submit onboarding data.
     Triggers diagnosis and stores results.
     """
-    
-    # Convert activities to dict format
-    activities = [
-        {
-            "name": a.name,
-            "hours_per_week": a.hours_per_week,
-            "priority": a.priority,
-            "aligned_with_goal": a.aligned_with_goal,
+    try:
+        # Convert activities to dict format
+        activities = [
+            {
+                "name": a.name,
+                "hours_per_week": a.hours_per_week,
+                "priority": a.priority,
+                "aligned_with_goal": a.aligned_with_goal,
+            }
+            for a in data.current_activities
+        ]
+        
+        # Prepare data for storage
+        onboarding_data = {
+            "primary_goal": data.primary_goal,
+            "goal_deadline": data.goal_deadline,
+            "current_activities": activities,
+            "hours_work": data.hours_work,
+            "hours_sleep": data.hours_sleep,
+            "hours_exercise": data.hours_exercise,
+            "main_obstacle": data.main_obstacle,
+            "secondary_obstacles": data.secondary_obstacles,
+            "peak_energy_time": data.peak_energy_time,
+            "low_energy_time": data.low_energy_time,
+            "fixed_commitments": data.fixed_commitments,
         }
-        for a in data.current_activities
-    ]
-    
-    # Prepare data for storage
-    onboarding_data = {
-        "primary_goal": data.primary_goal,
-        "goal_deadline": data.goal_deadline,
-        "current_activities": activities,
-        "hours_work": data.hours_work,
-        "hours_sleep": data.hours_sleep,
-        "hours_exercise": data.hours_exercise,
-        "main_obstacle": data.main_obstacle,
-        "secondary_obstacles": data.secondary_obstacles,
-        "peak_energy_time": data.peak_energy_time,
-        "low_energy_time": data.low_energy_time,
-        "fixed_commitments": data.fixed_commitments,
-    }
-    
-    # Run diagnosis
-    diagnosis = run_diagnosis(onboarding_data)
-    
-    # Add diagnosis scores to data
-    onboarding_data.update({
-        "bottleneck_score": diagnosis.bottleneck_score,
-        "dispersion_score": diagnosis.dispersion_score,
-        "sleep_debt_score": diagnosis.sleep_debt_score,
-        "energy_leak_score": diagnosis.energy_leak_score,
-        "incoherence_score": diagnosis.incoherence_score,
-    })
-    
-    # Store onboarding
-    onboarding = await crud.upsert_onboarding(
-        db, 
-        current_user.id, 
-        onboarding_data
-    )
-    
-    log_diagnosis(current_user.id, diagnosis.overall_score)
-    
-    return OnboardingResponse.model_validate(onboarding)
+        
+        # Run diagnosis
+        diagnosis = run_diagnosis(onboarding_data)
+        
+        # Add diagnosis scores to data
+        onboarding_data.update({
+            "bottleneck_score": diagnosis.bottleneck_score,
+            "dispersion_score": diagnosis.dispersion_score,
+            "sleep_debt_score": diagnosis.sleep_debt_score,
+            "energy_leak_score": diagnosis.energy_leak_score,
+            "incoherence_score": diagnosis.incoherence_score,
+        })
+        
+        # Store onboarding
+        onboarding = await crud.upsert_onboarding(
+            db, 
+            current_user.id, 
+            onboarding_data
+        )
+
+        # Generate achievements roadmap
+        try:
+            from app.services.achievement_service import AchievementService
+            achievement_service = AchievementService(db)
+            await achievement_service.generate_user_roadmap(current_user.id, data.primary_goal)
+        except Exception as e:
+            # Don't fail onboarding if achievement generation fails, but log it
+            print(f"Error generating roadmap: {e}")
+        
+        log_diagnosis(current_user.id, diagnosis.overall_score)
+        
+        return OnboardingResponse.model_validate(onboarding)
+    except Exception as e:
+        import traceback
+        print(f"ERROR in submit_onboarding: {e}")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/diagnosis", response_model=DiagnosisSummary)

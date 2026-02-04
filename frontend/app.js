@@ -9,7 +9,8 @@ const screens = {
     dashboard: document.getElementById('screen-dashboard'),
     history: document.getElementById('screen-history'),
     menu: document.getElementById('screen-menu'),
-    stats: document.getElementById('screen-stats')
+    stats: document.getElementById('screen-stats'),
+    achievements: document.getElementById('screen-achievements')
 };
 
 // --- Navigation ---
@@ -310,6 +311,9 @@ function renderPlan(plan) {
                 <div class="activity">${plan.horarios[time]}</div>
             </div>
         `).join('');
+
+    // Load active achievement for dashboard mini card
+    loadActiveAchievementMini();
 }
 
 function updateDate() {
@@ -566,6 +570,9 @@ window.goToScreen = (screenName) => {
     } else if (screenName === 'stats') {
         loadStats();
         showScreen('stats');
+    } else if (screenName === 'achievements') {
+        loadAchievements();
+        showScreen('achievements');
     } else {
         showScreen(screenName);
     }
@@ -685,5 +692,95 @@ async function loadHomeSummaries() {
                 }
             }
         } catch { histEl.innerText = "--"; }
+    }
+
+    // 4. Achievement Summary
+    const achEl = document.getElementById('summary-achievements');
+    if (achEl) {
+        try {
+            const res = await fetch(`${API_URL}/achievements/active`, { headers: { 'Authorization': `Bearer ${token}` } });
+            if (res.ok) {
+                const ach = await res.json();
+                achEl.innerText = `${ach.title} (${Math.round(ach.progress)}%)`;
+            } else {
+                achEl.innerText = "Empieza hoy";
+            }
+        } catch { achEl.innerText = "--"; }
+    }
+}
+
+// --- Achievements Logic ---
+async function loadAchievements() {
+    const listEl = document.getElementById('achievements-list');
+    listEl.innerHTML = '<div class="loading active"><div class="spinner"></div><p>Cargando tus metas...</p></div>';
+
+    try {
+        const res = await fetch(`${API_URL}/achievements/`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!res.ok) throw new Error('No se pudieron cargar los logros');
+
+        const achievements = await res.json();
+        renderAchievementsList(achievements);
+
+    } catch (err) {
+        listEl.innerHTML = `<p class="error-message">${err.message}</p>`;
+    }
+}
+
+function renderAchievementsList(items) {
+    const listEl = document.getElementById('achievements-list');
+
+    if (items.length === 0) {
+        listEl.innerHTML = '<p style="text-align:center; padding:20px; color:var(--text-secondary)">Completa el onboarding para ver tu roadmap.</p>';
+        return;
+    }
+
+    listEl.innerHTML = items.map(item => {
+        const statusClass = item.is_active ? 'active' : (item.is_unlocked ? 'unlocked' : 'locked');
+        const progress = Math.round(item.progress);
+
+        return `
+            <div class="achievement-card ${statusClass}">
+                <div class="achievement-month-tag">Mes ${item.month_number}</div>
+                <div class="achievement-title">${item.title}</div>
+                <div class="achievement-desc">${item.description}</div>
+                <div class="achievement-progress-container">
+                    <div class="progress-bar-label">
+                        <span>Progreso</span>
+                        <span>${progress}%</span>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" style="width: ${progress}%"></div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+async function loadActiveAchievementMini() {
+    const card = document.getElementById('active-achievement-card');
+    const titleEl = document.getElementById('active-achievement-title');
+    const pctEl = document.getElementById('active-achievement-pct');
+    const barEl = document.getElementById('active-achievement-progress');
+
+    try {
+        const res = await fetch(`${API_URL}/achievements/active`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (res.ok) {
+            const ach = await res.json();
+            titleEl.textContent = ach.title;
+            pctEl.textContent = `${Math.round(ach.progress)}%`;
+            barEl.style.width = `${ach.progress}%`;
+            card.classList.remove('hidden');
+        } else {
+            card.classList.add('hidden');
+        }
+    } catch {
+        card.classList.add('hidden');
     }
 }

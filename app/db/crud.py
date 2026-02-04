@@ -210,3 +210,88 @@ async def get_user_feedback_history(
         .limit(limit)
     )
     return result.scalars().all()
+
+
+# =============================================================================
+# Achievement CRUD
+# =============================================================================
+
+async def get_user_achievements(
+    db: AsyncSession, 
+    user_id: str
+) -> List["Achievement"]:
+    """Get all achievements for a user."""
+    from app.models.achievement import Achievement
+    
+    result = await db.execute(
+        select(Achievement)
+        .where(Achievement.user_id == user_id)
+        .order_by(Achievement.month_number.asc())
+    )
+    return result.scalars().all()
+
+
+async def get_active_achievement(
+    db: AsyncSession, 
+    user_id: str
+) -> Optional["Achievement"]:
+    """Get the currently active achievement for a user."""
+    from app.models.achievement import Achievement
+    
+    result = await db.execute(
+        select(Achievement).where(
+            and_(
+                Achievement.user_id == user_id,
+                Achievement.is_active == True
+            )
+        )
+    )
+    return result.scalar_one_or_none()
+
+
+async def create_achievements_batch(
+    db: AsyncSession, 
+    user_id: str, 
+    achievements_data: List[dict]
+) -> List["Achievement"]:
+    """Create multiple achievements for a user."""
+    from app.models.achievement import Achievement
+    
+    created_items = []
+    for i, data in enumerate(achievements_data):
+        achievement = Achievement(
+            user_id=user_id,
+            month_number=data.get("month", i + 1),
+            title=data.get("title"),
+            description=data.get("description"),
+            is_active=(i == 0), # First month is active by default
+            is_unlocked=False,
+            progress=0.0
+        )
+        db.add(achievement)
+        created_items.append(achievement)
+    
+    await db.flush()
+    return created_items
+
+
+async def update_achievement_progress(
+    db: AsyncSession, 
+    achievement_id: str, 
+    progress: float
+) -> Optional["Achievement"]:
+    """Update progress of an achievement."""
+    from app.models.achievement import Achievement
+    
+    achievement = await get_by_id(db, Achievement, achievement_id)
+    if not achievement:
+        return None
+        
+    achievement.progress = min(100.0, max(0.0, progress))
+    
+    if achievement.progress >= 100.0 and not achievement.is_unlocked:
+        achievement.is_unlocked = True
+        achievement.unlocked_at = datetime.utcnow()
+        
+    await db.flush()
+    return achievement
