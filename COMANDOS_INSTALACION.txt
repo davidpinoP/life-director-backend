@@ -1,0 +1,95 @@
+================================================================================
+    LIFE DIRECTOR - GUÍA DE INSTALACIÓN COMPLETA
+    Comandos para ejecutar en un ordenador nuevo
+================================================================================
+
+REQUISITOS PREVIOS:
+- Docker Desktop instalado (https://www.docker.com/products/docker-desktop/)
+- Python 3.11+ instalado (https://www.python.org/downloads/)
+- Git instalado (https://git-scm.com/downloads)
+
+================================================================================
+PASO 1: CLONAR EL PROYECTO
+================================================================================
+
+git clone <URL_DEL_REPOSITORIO>
+cd life-director-backend
+
+================================================================================
+PASO 2: CONFIGURAR VARIABLES DE ENTORNO
+================================================================================
+
+copy .env.example .env
+
+>> IMPORTANTE: Abre el archivo .env y añade tu OPENAI_API_KEY
+
+================================================================================
+PASO 3: LEVANTAR BASE DE DATOS CON DOCKER
+================================================================================
+
+docker-compose up -d db
+
+================================================================================
+PASO 4: CREAR ENTORNO VIRTUAL E INSTALAR DEPENDENCIAS
+================================================================================
+
+python -m venv venv
+.\venv\Scripts\activate
+pip install -r requirements.txt
+pip install email-validator
+
+================================================================================
+PASO 5: EJECUTAR EL SERVIDOR
+================================================================================
+
+uvicorn app.main:app --reload
+
+>> El servidor estará en: http://127.0.0.1:8000
+
+================================================================================
+PASO 6: VER EL FRONTEND
+================================================================================
+
+Abre en tu navegador el archivo:
+frontend/index.html
+
+(Haz doble clic en el archivo o arrástralo al navegador)
+
+================================================================================
+COMANDOS ÚTILES
+================================================================================
+
+# Activar el entorno virtual (cada vez que abras una nueva terminal):
+.\venv\Scripts\activate
+
+# Detener el servidor:
+Ctrl + C
+
+# Ver logs de la base de datos:
+docker-compose logs db
+
+# Detener la base de datos:
+docker-compose down
+
+# Reiniciar todo:
+docker-compose down
+docker-compose up -d db
+uvicorn app.main:app --reload
+
+================================================================================
+SOLUCIÓN DE PROBLEMAS
+================================================================================
+
+ERROR: "python no encontrado"
+>> Usa "py" en lugar de "python", o instala Python desde python.org
+
+ERROR: "email-validator not installed"
+>> Ejecuta: pip install email-validator
+
+ERROR: "asyncpg SSPI/Kerberos"
+>> La base de datos no está corriendo. Ejecuta: docker-compose up -d db
+
+ERROR: "Connection refused" al abrir el frontend
+>> Asegúrate de que el servidor uvicorn esté corriendo en otra terminal
+
+================================================================================
