@@ -14,15 +14,24 @@ const screens = {
 };
 
 // --- Navigation ---
+// --- Navigation ---
 function showScreen(screenName) {
     Object.values(screens).forEach(s => s && s.classList.remove('active'));
 
     if (screens[screenName]) {
         screens[screenName].classList.add('active');
+
+        // Navigation Hooks
+        if (screenName === 'achievements') {
+            loadAchievements();
+        }
     } else {
         console.error(`Screen "${screenName}" not found in DOM.`);
     }
 }
+
+// Global alias for HTML onClick
+window.goToScreen = showScreen;
 
 // --- Auth Logic ---
 const authTabs = document.querySelectorAll('.tab');
@@ -422,7 +431,11 @@ const historyList = document.getElementById('history-list');
 
 document.querySelectorAll('.nav-back').forEach(btn => {
     btn.addEventListener('click', () => {
-        showScreen(btn.dataset.target);
+        const target = btn.dataset.target;
+        showScreen(target);
+        if (target === 'menu') {
+            loadHomeSummaries(); // Refresh menu data
+        }
     });
 });
 
@@ -605,8 +618,18 @@ async function loadStats() {
         document.getElementById('stat-sleep').textContent =
             data.average_sleep ? `${data.average_sleep.toFixed(1)} h` : '--';
 
-        document.getElementById('stat-completion').textContent =
-            `${Math.round(data.average_completion * 100)}%`;
+        const completion = Math.round(data.average_completion * 100);
+        const compEl = document.getElementById('stat-completion');
+        compEl.textContent = `${completion}%`;
+
+        // Color Coding
+        if (completion >= 80) {
+            compEl.style.color = 'var(--text-success)';
+        } else if (completion >= 50) {
+            compEl.style.color = 'var(--text-warning)';
+        } else {
+            compEl.style.color = 'var(--text-danger)';
+        }
 
         document.getElementById('stat-recommendation').textContent =
             data.recommendation || "Sigue registrando días para obtener análisis.";
@@ -733,7 +756,14 @@ function renderAchievementsList(items) {
     const listEl = document.getElementById('achievements-list');
 
     if (items.length === 0) {
-        listEl.innerHTML = '<p style="text-align:center; padding:20px; color:var(--text-secondary)">Completa el onboarding para ver tu roadmap.</p>';
+        listEl.innerHTML = `
+            <div class="empty-state">
+                <p>No tienes un mapa de ruta generado.</p>
+                <button onclick="generateRoadmap()" class="btn-primary" id="btn-gen-roadmap">
+                    Generar Roadmap IA
+                </button>
+            </div>
+        `;
         return;
     }
 
@@ -782,5 +812,36 @@ async function loadActiveAchievementMini() {
         }
     } catch {
         card.classList.add('hidden');
+    }
+}
+
+
+// Generate Roadmap
+async function generateRoadmap() {
+    const btn = document.getElementById('btn-gen-roadmap');
+    if (btn) {
+        btn.textContent = "Generando (puede tardar 10s)...";
+        btn.disabled = true;
+    }
+
+    try {
+        const res = await fetch(`${API_URL}/achievements/generate`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!res.ok) throw new Error('Error generando roadmap');
+
+        // Reload
+        await loadAchievements();
+        // Also refresh mini card if needed
+        loadActiveAchievementMini();
+
+    } catch (err) {
+        alert(err.message);
+        if (btn) {
+            btn.textContent = "Reintentar";
+            btn.disabled = false;
+        }
     }
 }

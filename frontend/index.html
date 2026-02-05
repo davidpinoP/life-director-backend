@@ -116,7 +116,9 @@
         <div id="screen-menu" class="screen">
             <div class="container center-vertical">
                 <header class="menu-header">
-                    <h2 class="menu-title">LIFE DIRECTOR</h2>
+                    <div class="logo-container">
+                        <span class="logo-text">LIFE DIRECTOR</span>
+                    </div>
                     <p class="menu-subtitle">Tu Sistema Operativo</p>
                 </header>
 
@@ -166,18 +168,24 @@
                         <p id="summary-stats" class="menu-summary">--</p>
                     </div>
 
-                    <!-- Card: Achievements -->
+                    <!-- Card: Achievements (Gamification) -->
                     <div class="menu-card" onclick="goToScreen('achievements')">
                         <div class="card-icon">
                             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2">
-                                <circle cx="12" cy="8" r="7"></circle>
-                                <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+                                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                                <path d="M4 22h16"></path>
+                                <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+                                <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+                                <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
                             </svg>
                         </div>
                         <h3>Logros</h3>
                         <p id="summary-achievements" class="menu-summary">--</p>
                     </div>
+
+
                 </div>
 
                 <button id="btn-logout-menu" class="btn-text">Cerrar Sesión</button>
@@ -358,6 +366,46 @@
                 <div id="history-list" class="history-list">
                     <!-- Cards will be injected here -->
                     <div class="loading-history">Cargando...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Achievements Screen -->
+        <div id="screen-achievements" class="screen">
+            <div class="container">
+                <header class="dashboard-header">
+                    <h2>Mapa de Ruta</h2>
+                    <button class="btn-icon nav-back" data-target="menu">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <line x1="19" y1="12" x2="5" y2="12"></line>
+                            <polyline points="12 19 5 12 12 5"></polyline>
+                        </svg>
+                    </button>
+                </header>
+
+                <div class="achievements-container">
+                    <!-- Active Month (Hero) -->
+                    <div id="active-achievement" class="achievement-hero hidden">
+                        <div class="hero-header">
+                            <span class="month-badge">MES <span id="hero-month">1</span></span>
+                            <div class="hero-icon">🏆</div>
+                        </div>
+                        <h3 id="hero-title">--</h3>
+                        <p id="hero-desc">--</p>
+
+                        <div class="progress-section">
+                            <div class="progress-bar-container">
+                                <div id="hero-progress-bar" class="progress-bar-fill"></div>
+                            </div>
+                            <span id="hero-percent">0%</span>
+                        </div>
+                    </div>
+
+                    <!-- Timeline (Future/Past) -->
+                    <div id="achievements-timeline" class="timeline-list">
+                        <div class="loading-history">Cargando logros...</div>
+                    </div>
                 </div>
             </div>
         </div>
