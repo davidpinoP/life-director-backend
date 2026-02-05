@@ -26,6 +26,7 @@ class User(Base, TimestampMixin):
     email = Column(String(255), unique=True, nullable=False, index=True)
     hashed_password = Column(String(255), nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
+    is_elite = Column(Boolean, default=False, nullable=False)
     last_login = Column(DateTime, nullable=True)
 
 
@@ -53,6 +54,7 @@ class UserResponse(UserBase):
     """User response schema."""
     id: str
     is_active: bool
+    is_elite: bool
     created_at: datetime
     
     class Config:
@@ -64,6 +66,7 @@ class UserInDB(UserBase):
     id: str
     hashed_password: str
     is_active: bool
+    is_elite: bool
     created_at: datetime
     updated_at: datetime
     last_login: Optional[datetime] = None

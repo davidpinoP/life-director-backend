@@ -162,7 +162,14 @@ async def get_today_plan(
             detail="No hay plan para hoy",
         )
     
-    return DailyPlanResponse.model_validate(plan)
+    # Check if completed
+    feedback = await crud.get_feedback_by_plan_id(db, plan.id)
+    
+    response = DailyPlanResponse.model_validate(plan)
+    if feedback:
+        response.is_completed = True
+        
+    return response
 
 
 @router.post("/feedback", response_model=FeedbackResponse)

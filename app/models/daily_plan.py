@@ -105,6 +105,7 @@ class DailyPlanResponse(BaseModel):
     regla_clave: str
     
     created_at: datetime
+    is_completed: bool = False
     
     class Config:
         from_attributes = True

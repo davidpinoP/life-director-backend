@@ -1773,3 +1773,115 @@ input[type="range"]::-webkit-slider-thumb:hover {
 .menu-card:hover .menu-summary {
     opacity: 1;
 }
+
+/* ==================== REPORT SCREEN ==================== */
+
+.report-intro {
+    margin-bottom: var(--space-8);
+}
+
+.report-intro h3 {
+    font-size: 18px;
+    color: var(--text-primary);
+    text-transform: none;
+    letter-spacing: normal;
+    margin-bottom: var(--space-2);
+}
+
+.report-intro p {
+    font-size: 14px;
+    color: var(--text-tertiary);
+}
+
+.char-count {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-align: right;
+    margin-top: 4px;
+}
+
+/* Director Response Block */
+.director-response {
+    margin-top: var(--space-10);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-medium);
+    border-radius: var(--radius-xl);
+    padding: var(--space-8);
+    position: relative;
+    animation: screenEnter 0.6s var(--ease-expo) forwards;
+}
+
+.response-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-6);
+    border-bottom: 1px solid var(--border-subtle);
+    padding-bottom: var(--space-3);
+}
+
+.director-label {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.25em;
+    color: var(--text-primary);
+    background: var(--gradient-primary);
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.response-date {
+    font-size: 10px;
+    color: var(--text-muted);
+}
+
+.response-text {
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+}
+
+/* Post Mortem Gate */
+.pm-gate {
+    text-align: center;
+    padding: var(--space-12) 0;
+}
+
+#pm-status-msg {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: var(--space-6);
+}
+
+/* Post Mortem Blocks */
+.pm-block {
+    margin-top: var(--space-6);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--border-subtle);
+}
+
+.pm-block h4 {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-tertiary);
+    margin-bottom: var(--space-2);
+    text-transform: uppercase;
+}
+
+.pm-block p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+/* Transitions for Views */
+.view {
+    display: none;
+    opacity: 0;
+}
+
+.view.active {
+    display: block;
+    animation: screenEnter 0.4s var(--ease-expo) forwards;
+}

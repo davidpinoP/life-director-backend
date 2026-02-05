@@ -10,7 +10,8 @@ const screens = {
     history: document.getElementById('screen-history'),
     menu: document.getElementById('screen-menu'),
     stats: document.getElementById('screen-stats'),
-    achievements: document.getElementById('screen-achievements')
+    achievements: document.getElementById('screen-achievements'),
+    report: document.getElementById('screen-report')
 };
 
 // --- Navigation ---
@@ -24,6 +25,8 @@ function showScreen(screenName) {
         // Navigation Hooks
         if (screenName === 'achievements') {
             loadAchievements();
+        } else if (screenName === 'report') {
+            loadReportScreen();
         }
     } else {
         console.error(`Screen "${screenName}" not found in DOM.`);
@@ -323,6 +326,22 @@ function renderPlan(plan) {
 
     // Load active achievement for dashboard mini card
     loadActiveAchievementMini();
+
+    // Check completion status
+    const btnFeedback = document.getElementById('btn-feedback');
+    if (plan.is_completed) {
+        btnFeedback.disabled = true;
+        btnFeedback.textContent = "Día registrado ✅";
+        btnFeedback.classList.add('completed');
+        btnFeedback.style.opacity = "0.6";
+        btnFeedback.style.cursor = "not-allowed";
+    } else {
+        btnFeedback.disabled = false;
+        btnFeedback.textContent = "Registrar día";
+        btnFeedback.classList.remove('completed');
+        btnFeedback.style.opacity = "1";
+        btnFeedback.style.cursor = "pointer";
+    }
 }
 
 function updateDate() {
@@ -416,6 +435,7 @@ document.getElementById('form-feedback').addEventListener('submit', async (e) =>
 
         alert('Día registrado');
         modal.classList.remove('active');
+        loadDailyPlan();
 
     } catch (err) {
         alert(err.message);
@@ -746,10 +766,32 @@ async function loadAchievements() {
 
         const achievements = await res.json();
         renderAchievementsList(achievements);
+        updateAchievementHero(achievements);
 
     } catch (err) {
         listEl.innerHTML = `<p class="error-message">${err.message}</p>`;
     }
+}
+
+function updateAchievementHero(items) {
+    const hero = document.getElementById('active-achievement');
+    if (!hero) return;
+
+    const active = items.find(i => i.is_active);
+    if (!active) {
+        hero.classList.add('hidden');
+        return;
+    }
+
+    document.getElementById('hero-month').textContent = active.month;
+    document.getElementById('hero-title').textContent = active.title;
+    document.getElementById('hero-desc').textContent = active.description;
+
+    const pct = Math.round(active.progress);
+    document.getElementById('hero-percent').textContent = `${pct}%`;
+    document.getElementById('hero-progress-bar').style.width = `${pct}%`;
+
+    hero.classList.remove('hidden');
 }
 
 function renderAchievementsList(items) {
@@ -773,7 +815,7 @@ function renderAchievementsList(items) {
 
         return `
             <div class="achievement-card ${statusClass}">
-                <div class="achievement-month-tag">Mes ${item.month_number}</div>
+                <div class="achievement-month-tag">Mes ${item.month}</div>
                 <div class="achievement-title">${item.title}</div>
                 <div class="achievement-desc">${item.description}</div>
                 <div class="achievement-progress-container">
@@ -845,3 +887,183 @@ async function generateRoadmap() {
         }
     }
 }
+
+// --- Report Interface Logic ---
+
+let currentPmWeekStart = null;
+
+async function loadReportScreen() {
+    // 1. Check Daily Report Status
+    const formDaily = document.getElementById('form-daily-report');
+    const respDaily = document.getElementById('report-response');
+
+    // Reset states
+    formDaily.reset();
+    formDaily.classList.remove('hidden');
+    respDaily.classList.add('hidden');
+
+    try {
+        const res = await fetch(`${API_URL}/director/report/today`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+            const report = await res.json();
+            if (report) {
+                // Show completed state
+                formDaily.classList.add('hidden');
+                respDaily.classList.remove('hidden');
+                document.getElementById('response-text').innerText = report.director_response;
+            }
+        }
+    } catch (e) { console.error(e); }
+
+    // 2. Check Post Mortem Status
+    const tabPM = document.getElementById('tab-post-mortem');
+    try {
+        const res = await fetch(`${API_URL}/director/post-mortem/status`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const status = await res.json();
+
+        if (status.reason === "Requiere Nivel Élite") {
+            tabPM.classList.add('hidden');
+        } else {
+            tabPM.classList.remove('hidden');
+            // Update gate message
+            document.getElementById('pm-status-msg').innerText = status.reason;
+
+            if (status.is_eligible) {
+                document.getElementById('btn-start-pm').classList.remove('hidden');
+                document.getElementById('form-post-mortem').classList.add('hidden'); // Ensure form hidden initially
+                currentPmWeekStart = status.week_start;
+            } else {
+                document.getElementById('btn-start-pm').classList.add('hidden');
+                // If already submitted? We don't have existing content viewing yet for PM in this iteration
+                // Just show message.
+            }
+        }
+    } catch (e) { console.error(e); }
+}
+
+// Report Input Logic
+const reportInput = document.getElementById('report-content');
+const reportCount = document.getElementById('report-chars');
+
+reportInput.addEventListener('input', () => {
+    reportCount.textContent = reportInput.value.length;
+    // Simple line limit check (soft)
+    const lines = reportInput.value.split('\n').length;
+    if (lines > 6) {
+        reportInput.style.borderColor = 'orange';
+    } else {
+        reportInput.style.borderColor = 'var(--border-color)';
+    }
+});
+
+// Submit Daily Report
+document.getElementById('form-daily-report').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('btn-submit-report');
+    btn.disabled = true;
+    btn.textContent = "Analizando...";
+
+    const content = document.getElementById('report-content').value;
+
+    try {
+        const res = await fetch(`${API_URL}/director/report`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ content })
+        });
+
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.detail || "Error enviando reporte");
+        }
+
+        const data = await res.json();
+
+        // Show Response
+        document.getElementById('form-daily-report').classList.add('hidden');
+        document.getElementById('report-response').classList.remove('hidden');
+        document.getElementById('response-text').innerText = data.director_response;
+
+    } catch (err) {
+        alert(err.message);
+        btn.disabled = false;
+        btn.textContent = "Enviar Informe";
+    }
+});
+
+// Post Mortem Logic
+document.getElementById('btn-start-pm').addEventListener('click', () => {
+    document.getElementById('pm-gate').classList.add('hidden');
+    document.getElementById('form-post-mortem').classList.remove('hidden');
+});
+
+document.getElementById('form-post-mortem').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('btn-submit-pm');
+    btn.disabled = true;
+    btn.textContent = "Procesando...";
+
+    if (!currentPmWeekStart) {
+        alert("Error: No se ha determinado la semana. Recarga la página.");
+        btn.disabled = false;
+        return;
+    }
+
+    const payload = {
+        week_start_date: currentPmWeekStart,
+        content_good: document.getElementById('pm-good').value,
+        content_bad: document.getElementById('pm-bad').value,
+        content_delusion: document.getElementById('pm-delusion').value
+    };
+
+    try {
+        const res = await fetch(`${API_URL}/director/post-mortem`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.detail || "Error enviando post-mortem");
+        }
+
+        const data = await res.json();
+
+        // Show Response
+        document.getElementById('form-post-mortem').classList.add('hidden');
+        const respDiv = document.getElementById('pm-response');
+        if (respDiv) respDiv.classList.remove('hidden');
+
+        document.getElementById('res-adjustments').innerText = data.response_adjustments;
+        document.getElementById('res-cuts').innerText = data.response_cuts;
+        document.getElementById('res-rules').innerText = data.response_rules;
+
+    } catch (err) {
+        alert(err.message);
+        btn.disabled = false;
+        btn.textContent = "Enviar Análisis";
+    }
+});
+
+// Tabs Logic
+document.querySelectorAll('#screen-report .tab').forEach(t => {
+    t.addEventListener('click', () => {
+        document.querySelectorAll('#screen-report .tab').forEach(x => x.classList.remove('active'));
+        document.querySelectorAll('#screen-report .view').forEach(x => x.classList.remove('active'));
+
+        t.classList.add('active');
+        const viewId = `view-${t.dataset.tab}`;
+        document.getElementById(viewId).classList.add('active');
+    });
+});

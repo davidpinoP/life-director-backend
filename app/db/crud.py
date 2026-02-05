@@ -81,6 +81,23 @@ async def get_user_by_id(
     return await get_by_id(db, User, user_id)
 
 
+async def update_user_elite_status(
+    db: AsyncSession, 
+    user_id: str, 
+    is_elite: bool
+) -> Optional["User"]:
+    """Update user's elite status."""
+    from app.models.user import User
+    
+    user = await get_user_by_id(db, user_id)
+    if not user:
+        return None
+        
+    user.is_elite = is_elite
+    await db.flush()
+    return user
+
+
 # =============================================================================
 # Onboarding CRUD
 # =============================================================================
@@ -212,6 +229,19 @@ async def get_user_feedback_history(
     return result.scalars().all()
 
 
+async def get_feedback_by_plan_id(
+    db: AsyncSession, 
+    plan_id: str
+) -> Optional["Feedback"]:
+    """Get feedback for a specific plan."""
+    from app.models.feedback import Feedback
+    
+    result = await db.execute(
+        select(Feedback).where(Feedback.plan_id == plan_id)
+    )
+    return result.scalar_one_or_none()
+
+
 # =============================================================================
 # Achievement CRUD
 # =============================================================================
@@ -295,3 +325,80 @@ async def update_achievement_progress(
         
     await db.flush()
     return achievement
+
+
+# =============================================================================
+# Report CRUD
+# =============================================================================
+
+async def create_daily_report(
+    db: AsyncSession, 
+    user_id: str, 
+    content: str,
+    director_response: str
+) -> "DailyReport":
+    """Create a daily report."""
+    from app.models.report import DailyReport
+    
+    report = DailyReport(
+        user_id=user_id,
+        date=date.today(),
+        content=content,
+        director_response=director_response
+    )
+    return await create(db, report)
+
+
+async def get_daily_report_by_date(
+    db: AsyncSession, 
+    user_id: str,
+    report_date: date
+) -> Optional["DailyReport"]:
+    """Get report for a specific date."""
+    from app.models.report import DailyReport
+    
+    result = await db.execute(
+        select(DailyReport).where(
+            and_(
+                DailyReport.user_id == user_id,
+                DailyReport.date == report_date
+            )
+        )
+    )
+    return result.scalar_one_or_none()
+
+
+async def create_post_mortem(
+    db: AsyncSession, 
+    user_id: str, 
+    week_start: date,
+    data: dict
+) -> "WeeklyPostMortem":
+    """Create a weekly post-mortem."""
+    from app.models.report import WeeklyPostMortem
+    
+    pm = WeeklyPostMortem(
+        user_id=user_id,
+        week_start_date=week_start,
+        **data
+    )
+    return await create(db, pm)
+
+
+async def get_post_mortem_by_week(
+    db: AsyncSession, 
+    user_id: str, 
+    week_start: date
+) -> Optional["WeeklyPostMortem"]:
+    """Get post-mortem for a specific week."""
+    from app.models.report import WeeklyPostMortem
+    
+    result = await db.execute(
+        select(WeeklyPostMortem).where(
+            and_(
+                WeeklyPostMortem.user_id == user_id,
+                WeeklyPostMortem.week_start_date == week_start
+            )
+        )
+    )
+    return result.scalar_one_or_none()
