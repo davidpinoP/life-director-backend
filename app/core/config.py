@@ -31,7 +31,7 @@ class Settings(BaseSettings):
     MAX_LLM_CALLS_PER_DAY: int = 50
     
     # CORS - string que se convierte a lista
-    ALLOWED_ORIGINS_STR: str = "*"
+    ALLOWED_ORIGINS_STR: str = "http://localhost:8080,http://localhost:3000,http://127.0.0.1:8080,http://127.0.0.1:3000"
     
     @property
     def ALLOWED_ORIGINS(self) -> List[str]:

@@ -20,11 +20,12 @@ app = FastAPI(
 
 # CORS for mobile apps and dev
 # Note: allow_credentials=True cannot be used with allow_origins=["*"]
-is_wildcard = "*" in settings.ALLOWED_ORIGINS
+allowed_origins = settings.ALLOWED_ORIGINS
+is_wildcard = allowed_origins == ["*"]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.ALLOWED_ORIGINS if not is_wildcard else ["*"],
-    allow_credentials=not is_wildcard, # Only allow credentials if we have specific origins
+    allow_origins=allowed_origins,
+    allow_credentials=not is_wildcard,
     allow_methods=["*"],
     allow_headers=["*"],
 )
