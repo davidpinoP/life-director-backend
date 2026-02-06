@@ -19,7 +19,10 @@ cd life-director-backend
 PASO 2: CONFIGURAR VARIABLES DE ENTORNO
 ================================================================================
 
+# Windows:
 copy .env.example .env
+# macOS / Linux:
+cp .env.example .env
 
 >> IMPORTANTE: Abre el archivo .env y añade tu OPENAI_API_KEY
 
@@ -33,10 +36,20 @@ docker-compose up -d db
 PASO 4: CREAR ENTORNO VIRTUAL E INSTALAR DEPENDENCIAS
 ================================================================================
 
+# 1. Crear el entorno virtual
+# Windows:
 python -m venv venv
+# macOS / Linux (si "python" no funciona, usa "python3"):
+python3 -m venv venv
+
+# 2. Activar el entorno virtual
+# Windows:
 .\venv\Scripts\activate
+# macOS / Linux:
+source venv/bin/activate
+
+# 3. Instalar dependencias
 pip install -r requirements.txt
-pip install email-validator
 
 ================================================================================
 PASO 5: EJECUTAR EL SERVIDOR
@@ -50,8 +63,15 @@ uvicorn app.main:app --reload
 PASO 6: VER EL FRONTEND
 ================================================================================
 
-Abre en tu navegador el archivo:
-frontend/index.html
+# Opción 1: Servidor local (Recomendado)
+# Abre una nueva terminal y ejecuta:
+cd frontend
+python3 -m http.server 8080
+
+# Luego abre en tu navegador: http://localhost:8080
+
+# Opción 2: Abrir archivo directamente
+# Abre en tu navegador el archivo: frontend/index.html
 
 (Haz doble clic en el archivo o arrástralo al navegador)
 
@@ -60,7 +80,8 @@ COMANDOS ÚTILES
 ================================================================================
 
 # Activar el entorno virtual (cada vez que abras una nueva terminal):
-.\venv\Scripts\activate
+# Windows: .\venv\Scripts\activate
+# macOS/Linux: source venv/bin/activate
 
 # Detener el servidor:
 Ctrl + C
@@ -80,8 +101,11 @@ uvicorn app.main:app --reload
 SOLUCIÓN DE PROBLEMAS
 ================================================================================
 
-ERROR: "python no encontrado"
->> Usa "py" en lugar de "python", o instala Python desde python.org
+ERROR: "command not found: python" (macOS/Linux)
+>> Usa "python3" en lugar de "python"
+
+ERROR: "python no encontrado" o "py no disponible" (Windows)
+>> Instala Python desde python.org y asegúrate de marcar "Add Python to PATH"
 
 ERROR: "email-validator not installed"
 >> Ejecuta: pip install email-validator

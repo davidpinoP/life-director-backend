@@ -9,11 +9,13 @@ python-multipart
 # Validation
 pydantic
 pydantic-settings
+email-validator
 
 # Database
 sqlalchemy
 asyncpg
 alembic
+greenlet
 
 # Security (sin bcrypt para evitar Rust)
 python-jose
