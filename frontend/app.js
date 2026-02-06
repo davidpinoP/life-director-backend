@@ -15,30 +15,19 @@ const screens = {
 };
 
 // --- Navigation ---
-// --- Navigation ---
 function showScreen(screenName) {
     Object.values(screens).forEach(s => s && s.classList.remove('active'));
 
     if (screens[screenName]) {
         screens[screenName].classList.add('active');
-
-        // Navigation Hooks
-        if (screenName === 'achievements') {
-            loadAchievements();
-        } else if (screenName === 'report') {
-            loadReportScreen();
-        }
     } else {
         console.error(`Screen "${screenName}" not found in DOM.`);
     }
 }
 
-// Global alias for HTML onClick
-window.goToScreen = showScreen;
-
 // --- Auth Logic ---
-const authTabs = document.querySelectorAll('.tab');
-const authForms = document.querySelectorAll('.form');
+const authTabs = document.querySelectorAll('#screen-auth .tab');
+const authForms = document.querySelectorAll('#screen-auth .form');
 const errorMsg = document.getElementById('auth-error');
 
 authTabs.forEach(tab => {
@@ -214,7 +203,9 @@ async function loadDailyPlan() {
     const noPlan = document.getElementById('no-plan');
 
     // Reset states
-    loading.classList.remove('active');
+    loading.classList.add('active');
+    content.classList.add('hidden');
+    noPlan.classList.add('hidden');
 
     try {
         // Intentar obtener plan de hoy
@@ -227,6 +218,7 @@ async function loadDailyPlan() {
             showScreen('dashboard');
             updateDate();
             renderPlan(plan);
+            loading.classList.remove('active');
             content.classList.remove('hidden');
             noPlan.classList.add('hidden');
             return;
@@ -243,10 +235,12 @@ async function loadDailyPlan() {
                 // Tiene onboarding, pero no plan -> Mostrar dashboard vacio
                 showScreen('dashboard');
                 updateDate();
+                loading.classList.remove('active');
                 noPlan.classList.remove('hidden');
                 content.classList.add('hidden');
             } else {
                 // No tiene onboarding -> Redirigir a onboarding
+                loading.classList.remove('active');
                 showScreen('onboarding');
             }
             return;
@@ -255,11 +249,17 @@ async function loadDailyPlan() {
         // Otros errores (401, etc)
         if (res.status === 401) {
             localStorage.removeItem('token');
+            loading.classList.remove('active');
             showScreen('auth');
+            return;
         }
+
+        // Fallback for unexpected statuses
+        loading.classList.remove('active');
 
     } catch (err) {
         console.error(err);
+        loading.classList.remove('active');
         showScreen('auth');
     }
 }
@@ -391,10 +391,9 @@ document.querySelectorAll('.toggle-btn').forEach(btn => {
         const val = e.target.dataset.value === 'true';
         document.getElementById('had-blockers').value = val;
 
-        if (id = parent.nextElementSibling) {
-            if (id.id === 'blocker-details') {
-                id.classList.toggle('hidden', !val);
-            }
+        const nextSection = parent.nextElementSibling;
+        if (nextSection && nextSection.id === 'blocker-details') {
+            nextSection.classList.toggle('hidden', !val);
         }
 
         const blockerDetails = document.getElementById('blocker-details');
@@ -606,6 +605,9 @@ window.goToScreen = (screenName) => {
     } else if (screenName === 'achievements') {
         loadAchievements();
         showScreen('achievements');
+    } else if (screenName === 'report') {
+        loadReportScreen();
+        showScreen('report');
     } else {
         showScreen(screenName);
     }
@@ -622,7 +624,7 @@ async function loadStats() {
     const loading = document.getElementById('loading-stats');
     const content = document.getElementById('stats-content');
 
-    loading.classList.remove('hidden'); // Ensure loading is visible
+    loading.classList.add('active');
     content.classList.add('hidden');
 
     try {
@@ -664,12 +666,7 @@ async function loadStats() {
             sleepMsg.style.color = 'var(--success-color)';
         }
 
-        loading.classList.add('hidden'); // Custom CSS might need fix if 'active' class used commonly
-        // My CSS for .loading uses .active to show. 
-        // Logic: .loading (display:none), .loading.active (display:block)
-        // So I should use .active
-
-        loading.style.display = 'none'; // Force hide for safety or use class logic
+        loading.classList.remove('active');
         content.classList.remove('hidden');
 
     } catch (err) {
