@@ -7,7 +7,9 @@
     <title>Life Director</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 
@@ -184,6 +186,21 @@
                         <h3>Logros</h3>
                         <p id="summary-achievements" class="menu-summary">--</p>
                     </div>
+
+                    <!-- Card: Finances -->
+                    <div class="menu-card" onclick="goToScreen('finances')">
+                        <div class="card-icon">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <line x1="12" y1="1" x2="12" y2="23"></line>
+                                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                            </svg>
+                        </div>
+                        <h3>Finanzas</h3>
+                        <p id="summary-finances" class="menu-summary">--</p>
+                    </div>
+
+
 
                     <!-- Card: Report (Informe al Director) -->
                     <div class="menu-card" onclick="goToScreen('report')">
@@ -493,6 +510,91 @@
                             <p id="res-rules"></p>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Finances Screen -->
+        <div id="screen-finances" class="screen">
+            <div class="container">
+                <header class="dashboard-header">
+                    <h2>Finanzas</h2>
+                    <button class="btn-icon nav-back" data-target="menu">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <line x1="19" y1="12" x2="5" y2="12"></line>
+                            <polyline points="12 19 5 12 12 5"></polyline>
+                        </svg>
+                    </button>
+                </header>
+
+                <!-- Month Selector -->
+                <div class="finance-controls">
+                    <button id="prev-month" class="btn-icon-small">&lt;</button>
+                    <span id="finance-period-display" class="period-display">--</span>
+                    <button id="next-month" class="btn-icon-small">&gt;</button>
+                </div>
+
+                <!-- Financial Summary -->
+                <div class="finance-summary-grid">
+                    <div class="fin-card fin-income">
+                        <span class="fin-label">Ingresos</span>
+                        <span id="val-income" class="fin-value">0€</span>
+                    </div>
+                    <div class="fin-card fin-balance">
+                        <span class="fin-label">Balance</span>
+                        <span id="val-balance" class="fin-value">0€</span>
+                    </div>
+                    <div class="fin-card fin-expense">
+                        <span class="fin-label">Gastos</span>
+                        <span id="val-expense" class="fin-value">0€</span>
+                    </div>
+                    <div class="fin-card fin-tax">
+                        <span class="fin-label">Impuestos</span>
+                        <span id="val-tax" class="fin-value">0€</span>
+                    </div>
+                </div>
+
+                <!-- Add Entry Form -->
+                <div class="add-finance-section">
+                    <button id="btn-toggle-add-finance" class="btn-secondary">+ Añadir movimiento</button>
+
+                    <form id="form-finance" class="finance-form hidden">
+                        <div class="form-row">
+                            <select id="fin-type" required>
+                                <option value="ingreso">Ingreso</option>
+                                <option value="gasto">Gasto</option>
+                                <option value="impuesto">Impuesto</option>
+                            </select>
+                            <input type="number" id="fin-amount" placeholder="Importe (€)" step="0.01" required>
+                        </div>
+
+                        <div class="form-row">
+                            <select id="fin-category">
+                                <option value="otro">Otro</option>
+                                <option value="servicio">Servicio / Proyecto</option>
+                                <option value="proveedor">Proveedor</option>
+                                <option value="material">Material</option>
+                                <option value="suscripcion">Suscripción</option>
+                                <option value="nomina">Nómina</option>
+                                <option value="freelance">Freelance</option>
+                            </select>
+                        </div>
+
+                        <div class="form-row">
+                            <input type="text" id="fin-desc" placeholder="Descripción" required>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" id="btn-cancel-finance" class="btn-text">Cancelar</button>
+                            <button type="submit" class="btn-primary">Guardar</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Transaction List -->
+                <div id="finance-list" class="finance-list">
+                    <div class="loading-history">Cargando movimientos...</div>
                 </div>
             </div>
         </div>

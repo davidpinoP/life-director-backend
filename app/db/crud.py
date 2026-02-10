@@ -402,3 +402,96 @@ async def get_post_mortem_by_week(
         )
     )
     return result.scalar_one_or_none()
+
+
+# =============================================================================
+# Finance CRUD
+# =============================================================================
+
+async def create_finance_entry(
+    db: AsyncSession,
+    user_id: str,
+    data: dict
+) -> "FinanceEntry":
+    """Create a finance entry."""
+    from app.models.finance import FinanceEntry
+    
+    entry = FinanceEntry(
+        user_id=user_id,
+        date=data.get("date", date.today()),
+        type=data["type"],
+        category=data.get("category", "otro"),
+        description=data["description"],
+        amount=data["amount"],
+    )
+    return await create(db, entry)
+
+
+async def get_finance_entries(
+    db: AsyncSession,
+    user_id: str,
+    month: int,
+    year: int
+) -> List["FinanceEntry"]:
+    """Get finance entries for a specific month/year."""
+    from app.models.finance import FinanceEntry
+    from sqlalchemy import extract
+    
+    result = await db.execute(
+        select(FinanceEntry).where(
+            and_(
+                FinanceEntry.user_id == user_id,
+                extract("month", FinanceEntry.date) == month,
+                extract("year", FinanceEntry.date) == year,
+            )
+        ).order_by(FinanceEntry.date.desc(), FinanceEntry.created_at.desc())
+    )
+    return result.scalars().all()
+
+
+async def delete_finance_entry(
+    db: AsyncSession,
+    entry_id: str,
+    user_id: str
+) -> bool:
+    """Delete a finance entry. Returns True if deleted."""
+    from app.models.finance import FinanceEntry
+    
+    result = await db.execute(
+        select(FinanceEntry).where(
+            and_(
+                FinanceEntry.id == entry_id,
+                FinanceEntry.user_id == user_id,
+            )
+        )
+    )
+    entry = result.scalar_one_or_none()
+    if not entry:
+        return False
+    await delete(db, entry)
+    return True
+
+
+async def get_finance_summary(
+    db: AsyncSession,
+    user_id: str,
+    month: int,
+    year: int
+) -> dict:
+    """Get aggregated finance summary for a month."""
+    entries = await get_finance_entries(db, user_id, month, year)
+    
+    total_ingresos = sum(e.amount for e in entries if e.type == "ingreso")
+    total_impuestos = sum(e.amount for e in entries if e.type == "impuesto")
+    total_gastos = sum(e.amount for e in entries if e.type == "gasto")
+    
+    return {
+        "month": month,
+        "year": year,
+        "total_ingresos": total_ingresos,
+        "total_impuestos": total_impuestos,
+        "total_gastos": total_gastos,
+        "balance_neto": total_ingresos - total_impuestos - total_gastos,
+        "num_entries": len(entries),
+    }
+

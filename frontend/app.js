@@ -3,16 +3,22 @@ let token = localStorage.getItem('token');
 let currentUser = null;
 
 // DOM Elements
-const screens = {
-    auth: document.getElementById('screen-auth'),
-    onboarding: document.getElementById('screen-onboarding'),
-    dashboard: document.getElementById('screen-dashboard'),
-    history: document.getElementById('screen-history'),
-    menu: document.getElementById('screen-menu'),
-    stats: document.getElementById('screen-stats'),
-    achievements: document.getElementById('screen-achievements'),
-    report: document.getElementById('screen-report')
-};
+// DOM Elements
+let screens = {};
+
+document.addEventListener('DOMContentLoaded', () => {
+    screens = {
+        auth: document.getElementById('screen-auth'),
+        onboarding: document.getElementById('screen-onboarding'),
+        dashboard: document.getElementById('screen-dashboard'),
+        history: document.getElementById('screen-history'),
+        menu: document.getElementById('screen-menu'),
+        stats: document.getElementById('screen-stats'),
+        achievements: document.getElementById('screen-achievements'),
+        report: document.getElementById('screen-report'),
+        finances: document.getElementById('screen-finances')
+    };
+});
 
 // --- Navigation ---
 function showScreen(screenName) {
@@ -455,6 +461,9 @@ document.querySelectorAll('.nav-back').forEach(btn => {
         if (target === 'menu') {
             loadHomeSummaries(); // Refresh menu data
         }
+        if (target === 'finances') {
+            loadFinances();
+        }
     });
 });
 
@@ -746,6 +755,24 @@ async function loadHomeSummaries() {
                 achEl.innerText = "Empieza hoy";
             }
         } catch { achEl.innerText = "--"; }
+    }
+    // 5. Finances Summary
+    const finEl = document.getElementById('summary-finances');
+    if (finEl) {
+        try {
+            const today = new Date();
+            const res = await fetch(`${API_URL}/finances/summary?month=${today.getMonth() + 1}&year=${today.getFullYear()}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                finEl.innerText = `${data.balance_neto.toFixed(0)}€ Balance`;
+                if (data.balance_neto >= 0) finEl.style.color = 'var(--success)';
+                else finEl.style.color = 'var(--danger)';
+            } else {
+                finEl.innerText = "0€";
+            }
+        } catch { finEl.innerText = "--"; }
     }
 }
 
@@ -1064,3 +1091,160 @@ document.querySelectorAll('#screen-report .tab').forEach(t => {
         document.getElementById(viewId).classList.add('active');
     });
 });
+// --- Finances Logic ---
+let currentFinanceDate = new Date();
+
+function getMonthYearParams() {
+    return `month=${currentFinanceDate.getMonth() + 1}&year=${currentFinanceDate.getFullYear()}`;
+}
+
+function updateFinancePeriodDisplay() {
+    const months = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+    document.getElementById('finance-period-display').innerText = `${months[currentFinanceDate.getMonth()]} ${currentFinanceDate.getFullYear()}`;
+}
+
+document.getElementById('prev-month').addEventListener('click', () => {
+    currentFinanceDate.setMonth(currentFinanceDate.getMonth() - 1);
+    updateFinancePeriodDisplay();
+    loadFinances();
+});
+
+document.getElementById('next-month').addEventListener('click', () => {
+    currentFinanceDate.setMonth(currentFinanceDate.getMonth() + 1);
+    updateFinancePeriodDisplay();
+    loadFinances();
+});
+
+document.getElementById('btn-toggle-add-finance').addEventListener('click', () => {
+    document.getElementById('form-finance').classList.remove('hidden');
+    document.getElementById('btn-toggle-add-finance').classList.add('hidden');
+});
+
+document.getElementById('btn-cancel-finance').addEventListener('click', () => {
+    document.getElementById('form-finance').classList.add('hidden');
+    document.getElementById('btn-toggle-add-finance').classList.remove('hidden');
+    document.getElementById('form-finance').reset();
+});
+
+document.getElementById('form-finance').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const type = document.getElementById('fin-type').value;
+    const amount = parseFloat(document.getElementById('fin-amount').value);
+    const category = document.getElementById('fin-category').value;
+    const description = document.getElementById('fin-desc').value;
+
+    try {
+        const res = await fetch(`${API_URL}/finances/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                type,
+                amount,
+                category,
+                description,
+                date: new Date().toISOString().split('T')[0] // Default to today
+            })
+        });
+
+        if (!res.ok) throw new Error("Error guardando movimiento");
+
+        // Reset and reload
+        document.getElementById('form-finance').reset();
+        document.getElementById('form-finance').classList.add('hidden');
+        document.getElementById('btn-toggle-add-finance').classList.remove('hidden');
+        loadFinances();
+
+    } catch (err) {
+        alert(err.message);
+    }
+});
+
+async function loadFinances() {
+    updateFinancePeriodDisplay();
+    const listEl = document.getElementById('finance-list');
+    listEl.innerHTML = '<div class="loading-history">Cargando...</div>';
+
+    try {
+        // 1. Load List
+        const resList = await fetch(`${API_URL}/finances/?${getMonthYearParams()}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (resList.ok) {
+            const entries = await resList.json();
+            renderFinanceList(entries);
+        }
+
+        // 2. Load Summary
+        const resSum = await fetch(`${API_URL}/finances/summary?${getMonthYearParams()}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (resSum.ok) {
+            const summary = await resSum.json();
+            document.getElementById('val-income').innerText = `${summary.total_ingresos.toFixed(2)}€`;
+            document.getElementById('val-expense').innerText = `${summary.total_gastos.toFixed(2)}€`;
+            document.getElementById('val-tax').innerText = `${summary.total_impuestos.toFixed(2)}€`;
+            document.getElementById('val-balance').innerText = `${summary.balance_neto.toFixed(2)}€`;
+
+            // Colorize balance
+            const balEl = document.getElementById('val-balance');
+            if (summary.balance_neto > 0) balEl.style.color = 'var(--success)';
+            else if (summary.balance_neto < 0) balEl.style.color = 'var(--danger)';
+            else balEl.style.color = 'var(--ink)';
+        }
+
+    } catch (err) {
+        console.error(err);
+        listEl.innerHTML = '<div class="loading-history">Error cargando datos.</div>';
+    }
+}
+
+function renderFinanceList(entries) {
+    const listEl = document.getElementById('finance-list');
+    listEl.innerHTML = '';
+
+    if (entries.length === 0) {
+        listEl.innerHTML = '<div class="loading-history">No hay movimientos este mes.</div>';
+        return;
+    }
+
+    entries.forEach(entry => {
+        const div = document.createElement('div');
+        div.className = 'fin-item';
+        div.innerHTML = `
+            <div class="fin-item-left">
+                <span class="fin-desc">${entry.description}</span>
+                <span class="fin-meta">${new Date(entry.date).toLocaleDateString()} • ${entry.category}</span>
+            </div>
+            <div class="fin-item-right">
+                <div class="fin-amount ${entry.type}">${entry.type === 'ingreso' ? '+' : '-'}${entry.amount.toFixed(2)}€</div>
+            </div>
+            <button class="btn-delete-fin" onclick="deleteFinance('${entry.id}')">&times;</button>
+        `;
+        listEl.appendChild(div);
+    });
+}
+
+async function deleteFinance(id) {
+    if (!confirm("¿Eliminar este movimiento?")) return;
+
+    try {
+        const res = await fetch(`${API_URL}/finances/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (res.ok) {
+            loadFinances();
+        } else {
+            alert("Error eliminando");
+        }
+    } catch (err) {
+        alert("Error de conexión");
+    }
+}

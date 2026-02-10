@@ -6,7 +6,7 @@ Sistema Operativo Personal. Decide. No aconseja.
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes import auth, onboarding, director, feedback, status, achievements, reports
+from app.api.routes import auth, onboarding, director, feedback, status, achievements, reports, finances
 from app.core.config import settings
 from app.db.session import init_db, close_db
 
@@ -37,6 +37,7 @@ app.include_router(director.router, prefix="/director", tags=["director"])
 app.include_router(feedback.router, prefix="/feedback", tags=["feedback"])
 app.include_router(achievements.router, prefix="/achievements", tags=["achievements"])
 app.include_router(reports.router, prefix="/director", tags=["reports"])
+app.include_router(finances.router, prefix="/finances", tags=["finances"])
 app.include_router(status.router, tags=["status"])
 
 
